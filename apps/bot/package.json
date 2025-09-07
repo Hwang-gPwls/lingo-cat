@@ -1,0 +1,29 @@
+{
+  "name": "@kaia/bot",
+  "version": "1.0.0",
+  "description": "Slack real-time translation bot with Gemini AI",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "NODE_OPTIONS='--dns-result-order=ipv4first' tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.15.0",
+    "@slack/bolt": "^3.18.0",
+    "dotenv": "^16.4.5",
+    "@kaia/core": "workspace:*",
+    "@kaia/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.11.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  }
+}

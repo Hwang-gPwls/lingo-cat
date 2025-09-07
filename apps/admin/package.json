@@ -1,0 +1,35 @@
+{
+  "name": "@kaia/admin",
+  "version": "1.0.0",
+  "description": "Kaia admin console - Next.js dashboard",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.5.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@heroicons/react": "^2.0.18",
+    "@headlessui/react": "^1.7.17",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0",
+    "@kaia/core": "workspace:*",
+    "@kaia/types": "workspace:*",
+    "@kaia/storage-adapter": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "15.5.2",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.0"
+  }
+}

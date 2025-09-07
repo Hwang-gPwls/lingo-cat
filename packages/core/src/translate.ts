@@ -1,11 +1,8 @@
-import { GoogleGenerativeAI } from '@langchain/google-genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { envConfig } from '../config/env';
 import { preserveFormatting } from '../utils/text';
 
-const genAI = new GoogleGenerativeAI({
-  apiKey: envConfig.geminiApiKey,
-  model: envConfig.modelName
-});
+const genAI = new GoogleGenerativeAI(envConfig.geminiApiKey);
 
 export interface TranslationResult {
   targetLanguage: string;
@@ -23,10 +20,13 @@ export const translateTo = async (text: string, targetLang: string, sourceLang?:
     const prompt = `Translate the following text ${sourceInfo} to ${targetLang}. 
 
 IMPORTANT RULES:
-1. Preserve any code blocks (```) and inline code (`), links, and mentions (@user) exactly as they are
-2. Maintain the original formatting and structure
-3. Return ONLY the translated text without any additional commentary
-4. If the text contains technical terms, preserve them appropriately
+1. Preserve any code blocks (\`\`\`) and inline code (\`), links, and mentions (@user) exactly as they are
+2. Maintain the original formatting and structure including line breaks, bullet points, and paragraph structure
+3. Keep all Slack mentions (<@U...>) unchanged
+4. Keep all emojis (:smile:, :wave:, etc.) unchanged
+5. Return ONLY the translated text without any additional commentary
+6. If the text contains technical terms, preserve them appropriately
+7. Preserve the exact same number of line breaks as in the original text
 
 Text to translate: "${text}"
 
@@ -41,7 +41,7 @@ Translation:`;
       )
     ]) as any;
 
-    const response = result.response;
+    const response = await result.response;
     const translatedText = response.text().trim();
     
     return {
@@ -144,6 +144,29 @@ export const filterTargetLanguages = (targetLangs: string[], sourceLang: string)
 };
 
 /**
+ * Language code to flag emoji mapping
+ */
+const flagMap: Record<string, string> = {
+  en: ':us:',
+  ja: ':jp:',
+  ko: ':kr:',
+  fr: ':fr:',
+  zh: ':cn:',
+  es: ':es:',
+  de: ':de:',
+  it: ':it:',
+  pt: ':flag-pt:',
+  ru: ':ru:',
+  ar: ':flag-sa:',
+  hi: ':flag-in:',
+  th: ':flag-th:',
+  vi: ':flag-vn:',
+  id: ':flag-id:',
+  ms: ':flag-my:',
+  tl: ':flag-ph:'
+};
+
+/**
  * Format translation results for Slack posting
  */
 export const formatTranslationResults = (
@@ -151,15 +174,15 @@ export const formatTranslationResults = (
   targetLangs: string[], 
   results: TranslationResult[]
 ): string => {
-  const header = `*LingoCat* detected \`${sourceLang}\` → ${targetLangs.map(t => `\`${t}\``).join(', ')}`;
-  
   const translations = results.map(result => {
+    const flagEmoji = flagMap[result.targetLanguage] || ':globe_with_meridians:';
+    
     if (result.success && result.translatedText) {
-      return `• *${result.targetLanguage}*: ${result.translatedText}`;
+      return `${flagEmoji} ${result.translatedText}`;
     } else {
-      return `• *${result.targetLanguage}*: _translation failed_`;
+      return `${flagEmoji} _translation failed_`;
     }
   });
   
-  return `${header}\n${translations.join('\n')}`;
+  return translations.join('\n\n');
 };

@@ -68,9 +68,9 @@ const setupMessageHandler = (app: App): void => {
       // Mark as processed early to prevent race conditions
       markMessageProcessed(processResult.channelId, processResult.messageTs);
 
-      // Get workspace info
-      const teamInfo = await client.team.info();
-      const workspaceId = teamInfo.team?.id || 'unknown';
+      // Get workspace info (temporarily skip team.info due to missing scope)
+      // const teamInfo = await client.team.info();
+      const workspaceId = 'temp-workspace-id';
 
       // Detect language
       Logger.debug('Starting language detection', { text: msg.text?.substring(0, 50) });
@@ -91,8 +91,15 @@ const setupMessageHandler = (app: App): void => {
         detectedLang: sourceLang
       });
 
-      // Filter target languages (exclude source language)
-      const targetLangs = filterTargetLanguages(envConfig.targetLangs, sourceLang);
+      // Filter target languages based on source language
+      let targetLangs: string[] = [];
+      if (sourceLang === 'ko') {
+        targetLangs = ['en', 'ja'];
+      } else if (sourceLang === 'ja') {
+        targetLangs = ['ko', 'en'];
+      } else {
+        targetLangs = filterTargetLanguages(envConfig.targetLangs, sourceLang);
+      }
       
       if (targetLangs.length === 0) {
         Logger.debug('No target languages after filtering', {
@@ -239,9 +246,9 @@ const setupMentionHandler = (app: App): void => {
         return;
       }
 
-      // Get workspace info
-      const teamInfo = await client.team.info();
-      const workspaceId = teamInfo.team?.id || 'unknown';
+      // Get workspace info (temporarily skip team.info due to missing scope)
+      // const teamInfo = await client.team.info();
+      const workspaceId = 'temp-workspace-id';
 
       // Detect and translate
       const sourceLang = await detectLanguageWithRetry(textToTranslate);
@@ -254,7 +261,14 @@ const setupMentionHandler = (app: App): void => {
         return;
       }
 
-      const filteredTargets = filterTargetLanguages(targetLangs, sourceLang);
+      let filteredTargets: string[] = [];
+      if (sourceLang === 'ko') {
+        filteredTargets = ['en', 'ja'];
+      } else if (sourceLang === 'ja') {
+        filteredTargets = ['ko', 'en'];
+      } else {
+        filteredTargets = filterTargetLanguages(targetLangs, sourceLang);
+      }
       
       if (filteredTargets.length === 0) {
         await say({

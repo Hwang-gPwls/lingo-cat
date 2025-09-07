@@ -1,10 +1,7 @@
-import { GoogleGenerativeAI } from '@langchain/google-genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { envConfig } from '../config/env';
 
-const genAI = new GoogleGenerativeAI({
-  apiKey: envConfig.geminiApiKey,
-  model: envConfig.modelName
-});
+const genAI = new GoogleGenerativeAI(envConfig.geminiApiKey);
 
 export interface LanguageDetectionResult {
   language: string;
@@ -32,7 +29,7 @@ Language code:`;
       )
     ]) as any;
 
-    const response = result.response;
+    const response = await result.response;
     const detectedLang = response.text().trim().toLowerCase();
     
     // Validate that the response is a valid ISO-639-1 code

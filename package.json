@@ -1,31 +1,37 @@
 {
-  "name": "lingo-cat",
+  "name": "@kaia/monorepo",
   "version": "1.0.0",
-  "description": "Slack real-time translation bot with Gemini AI",
-  "main": "dist/index.js",
+  "description": "Kaia - Slack real-time translation bot with admin console",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "jest",
-    "clean": "rm -rf dist"
-  },
-  "keywords": ["slack", "translation", "bot", "gemini", "ai"],
-  "author": "LingoCat Team",
-  "license": "MIT",
-  "dependencies": {
-    "@slack/bolt": "^3.18.0",
-    "dotenv": "^16.4.5",
-    "@langchain/google-genai": "^0.2.0",
-    "langchain": "^0.2.12"
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "clean": "turbo clean && rm -rf node_modules .turbo",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "typescript": "^5.3.0",
-    "tsx": "^4.6.0",
-    "@types/jest": "^29.5.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.0"
-  }
+    "@turbo/gen": "^1.10.0",
+    "turbo": "^1.10.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "slack",
+    "translation",
+    "bot",
+    "gemini",
+    "ai",
+    "monorepo",
+    "turborepo"
+  ],
+  "author": "Kaia Team",
+  "license": "MIT"
 }
