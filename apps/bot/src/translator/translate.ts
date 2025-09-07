@@ -17,20 +17,22 @@ export interface TranslationResult {
 export const translateTo = async (text: string, targetLang: string, sourceLang?: string): Promise<TranslationResult> => {
   try {
     const sourceInfo = sourceLang ? `from ${sourceLang}` : '';
-    const prompt = `Translate the following text ${sourceInfo} to ${targetLang}. 
+    const prompt = `You are a professional translator. Translate the following text ${sourceInfo} to ${targetLang}.
 
-IMPORTANT RULES:
-1. Preserve any code blocks (\`\`\`) and inline code (\`), links, and mentions (@user) exactly as they are
-2. Maintain the original formatting and structure including line breaks, bullet points, and paragraph structure
-3. Keep all Slack mentions (<@U...>) unchanged
-4. Keep all emojis (:smile:, :wave:, etc.) unchanged
-5. Return ONLY the translated text without any additional commentary
-6. If the text contains technical terms, preserve them appropriately
-7. Preserve the exact same number of line breaks as in the original text
+CRITICAL REQUIREMENTS:
+1. You MUST translate the text to ${targetLang}. DO NOT return the original text unchanged.
+2. If translating to Korean (ko), use proper Korean grammar and vocabulary
+3. If translating to English (en), use natural English expressions
+4. Preserve any code blocks (\`\`\`) and inline code (\`) exactly as they are
+5. Keep all Slack mentions (<@U...>) unchanged
+6. Keep all emojis (:smile:, :wave:, etc.) unchanged  
+7. Maintain the original formatting including line breaks and paragraph structure
+8. Return ONLY the translated text without any additional commentary
+9. Technical terms like "API", "ID" can remain in English when translating to Korean
 
 Text to translate: "${text}"
 
-Translation:`;
+${targetLang} translation:`;
 
     const model = genAI.getGenerativeModel({ model: envConfig.modelName });
     

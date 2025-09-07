@@ -1,7 +1,7 @@
 import { App, LogLevel } from '@slack/bolt';
 import { envConfig } from './config/env';
-import { detectLanguageWithRetry } from './translator/detect';
-import { translateToMultiple, filterTargetLanguages, formatTranslationResults } from './translator/translate';
+import { filterTargetLanguages, formatTranslationResults } from './translator/translate';
+import { langChainTranslationService } from './translator/langchain-service';
 import { shouldProcessMessage, markMessageProcessed } from './middlewares/deduplication';
 import { Logger, createTimer, recordTranslationSuccess, recordTranslationFailure } from './infra/metrics';
 import { splitLongMessage } from './utils/text';
@@ -72,9 +72,9 @@ const setupMessageHandler = (app: App): void => {
       // const teamInfo = await client.team.info();
       const workspaceId = 'temp-workspace-id';
 
-      // Detect language
+      // Detect language using LangChain
       Logger.debug('Starting language detection', { text: msg.text?.substring(0, 50) });
-      const sourceLang = await detectLanguageWithRetry(msg.text);
+      const sourceLang = await langChainTranslationService.detectLanguage(msg.text);
       
       if (sourceLang === 'und') {
         Logger.warn('Language detection failed or returned undefined', {
@@ -116,7 +116,7 @@ const setupMessageHandler = (app: App): void => {
         targetCount: targetLangs.length
       });
 
-      const translationResults = await translateToMultiple(msg.text, targetLangs, sourceLang);
+      const translationResults = await langChainTranslationService.translateToMultiple(msg.text, targetLangs, sourceLang);
 
       // Format results for Slack
       const formattedMessage = formatTranslationResults(sourceLang, targetLangs, translationResults);
@@ -250,8 +250,8 @@ const setupMentionHandler = (app: App): void => {
       // const teamInfo = await client.team.info();
       const workspaceId = 'temp-workspace-id';
 
-      // Detect and translate
-      const sourceLang = await detectLanguageWithRetry(textToTranslate);
+      // Detect and translate using LangChain
+      const sourceLang = await langChainTranslationService.detectLanguage(textToTranslate);
       
       if (sourceLang === 'und') {
         await say({
@@ -278,7 +278,7 @@ const setupMentionHandler = (app: App): void => {
         return;
       }
 
-      const translationResults = await translateToMultiple(textToTranslate, filteredTargets, sourceLang);
+      const translationResults = await langChainTranslationService.translateToMultiple(textToTranslate, filteredTargets, sourceLang);
       const formattedMessage = formatTranslationResults(sourceLang, filteredTargets, translationResults);
       
       const messageParts = splitLongMessage(formattedMessage);
@@ -341,7 +341,7 @@ const setupMentionHandler = (app: App): void => {
  * Set up global error handlers
  */
 const setupErrorHandlers = (app: App): void => {
-  app.error((error) => {
+  app.error(async (error: any) => {
     Logger.error('Slack app error', error as Error);
   });
 };
