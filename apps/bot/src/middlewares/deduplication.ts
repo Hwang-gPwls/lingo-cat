@@ -175,7 +175,7 @@ export const shouldProcessMessage = (message: any): {
   }
 
   // Check for very short messages that might not be meaningful for translation
-  if (message.text.trim().length < 3) {
+  if (message.text.trim().length < 1) {
     return {
       shouldProcess: false,
       reason: 'Message too short for translation',

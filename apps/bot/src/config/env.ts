@@ -1,7 +1,8 @@
 import { config } from 'dotenv';
+import { join } from 'path';
 
-// Load environment variables from .env file
-config();
+// Load environment variables from root .env file
+config({ path: join(process.cwd(), '../../.env') });
 
 export interface EnvConfig {
   // Gemini API Configuration
