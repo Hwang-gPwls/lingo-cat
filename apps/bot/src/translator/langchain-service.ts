@@ -31,10 +31,9 @@ Language code:`;
       const result = await this.model.invoke(prompt);
       const detectedLang = result.content?.toString().trim().toLowerCase() || 'und';
       
-      // Validate that the response is a valid ISO-639-1 code
+      // Validate that the response is a supported language code
       const validLangCodes = [
-        'en', 'ko', 'ja', 'zh', 'es', 'fr', 'de', 'it', 'pt', 'ru', 
-        'ar', 'hi', 'th', 'vi', 'id', 'ms', 'tl', 'und'
+        'en', 'ko', 'ja', 'und'
       ];
       
       if (validLangCodes.includes(detectedLang)) {

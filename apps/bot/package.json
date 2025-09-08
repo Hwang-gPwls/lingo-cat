@@ -12,13 +12,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.15.0",
-    "@kaia/core": "workspace:*",
-    "@kaia/types": "workspace:*",
     "@langchain/google-genai": "^0.1.12",
     "@slack/bolt": "^3.18.0",
-    "dotenv": "^16.4.5",
-    "langchain": "^0.3.33"
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",

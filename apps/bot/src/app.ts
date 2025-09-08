@@ -1,6 +1,6 @@
 import { App, LogLevel } from '@slack/bolt';
 import { envConfig } from './config/env';
-import { filterTargetLanguages, formatTranslationResults } from './translator/translate';
+import { formatTranslationResults } from './translator/translate';
 import { langChainTranslationService } from './translator/langchain-service';
 import { shouldProcessMessage, markMessageProcessed } from './middlewares/deduplication';
 import { Logger, createTimer, recordTranslationSuccess, recordTranslationFailure } from './infra/metrics';
@@ -92,13 +92,17 @@ const setupMessageHandler = (app: App): void => {
       });
 
       // Filter target languages based on source language
+      // Support: ko <-> ja, en -> ko only
       let targetLangs: string[] = [];
       if (sourceLang === 'ko') {
-        targetLangs = ['en', 'ja'];
+        targetLangs = ['ja'];
       } else if (sourceLang === 'ja') {
-        targetLangs = ['ko', 'en'];
+        targetLangs = ['ko'];
+      } else if (sourceLang === 'en') {
+        targetLangs = ['ko'];
       } else {
-        targetLangs = filterTargetLanguages(envConfig.targetLangs, sourceLang);
+        // Unsupported language
+        targetLangs = [];
       }
       
       if (targetLangs.length === 0) {
@@ -215,28 +219,8 @@ const setupMentionHandler = (app: App): void => {
         text: event.text?.substring(0, 100)
       });
 
-      // Parse mention for custom target languages
-      // Format: @LingoCat -> en, fr
-      const mentionMatch = event.text.match(/@\w+\s*->\s*([a-z,\s]+)/i);
-      let targetLangs = envConfig.targetLangs;
-      
-      if (mentionMatch) {
-        const customTargets = mentionMatch[1]
-          .split(',')
-          .map(lang => lang.trim())
-          .filter(lang => lang.length === 2); // Basic validation for ISO-639-1
-        
-        if (customTargets.length > 0) {
-          targetLangs = customTargets;
-          Logger.info('Using custom target languages from mention', {
-            customTargets,
-            originalText: event.text
-          });
-        }
-      }
-
       // Extract the actual text to translate (remove mention part)
-      const textToTranslate = event.text.replace(/<@\w+>/, '').replace(/->\s*[a-z,\s]+/i, '').trim();
+      const textToTranslate = event.text.replace(/<@\w+>/, '').trim();
       
       if (!textToTranslate) {
         await say({
@@ -263,16 +247,22 @@ const setupMentionHandler = (app: App): void => {
 
       let filteredTargets: string[] = [];
       if (sourceLang === 'ko') {
-        filteredTargets = ['en', 'ja'];
+        filteredTargets = ['ja'];
       } else if (sourceLang === 'ja') {
-        filteredTargets = ['ko', 'en'];
+        filteredTargets = ['ko'];
+      } else if (sourceLang === 'en') {
+        filteredTargets = ['ko'];
       } else {
-        filteredTargets = filterTargetLanguages(targetLangs, sourceLang);
+        filteredTargets = [];
       }
       
       if (filteredTargets.length === 0) {
+        let message = `Language '${sourceLang}' is not supported for translation.`;
+        if (sourceLang !== 'und') {
+          message += `\n\nSupported translations:\n• Korean ↔ Japanese\n• English → Korean`;
+        }
         await say({
-          text: `The detected language (${sourceLang}) is the same as all target languages.`,
+          text: message,
           thread_ts: event.ts
         });
         return;
